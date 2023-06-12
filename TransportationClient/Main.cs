@@ -1,25 +1,17 @@
-﻿using Word = Microsoft.Office.Interop.Word;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+﻿using System;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace TransportationClient
 {
     public partial class Main : Form
     {
-        public BindingSource BDS;
-        public BindingNavigator Navigator = new BindingNavigator();
         private bool cn = false;
         public Main()
         {
             InitializeComponent();
             openCN();
+            FillingTables();
         }
         private void openCN()
         {
@@ -37,12 +29,14 @@ namespace TransportationClient
             cn = false;
             RefreshBtns();
         }
-
-        private void Form1_Load(object sender, EventArgs e)
+        private void FillingTables()
         {
-            
+            foreach (var table in Lib.tables)
+            {
+                Table.Items.Add(table);
+                tableRpt.Items.Add(table);
+            }
         }
-
         private void openBtn_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrEmpty(Table.Text))
@@ -65,11 +59,6 @@ namespace TransportationClient
                 Lib.OpenTable(Table.Text);
             }
             DGVTable.DataSource = Lib.dt;
-            BDS = new BindingSource
-            {
-                DataSource = DGVTable.DataSource
-            };
-            Navigator.BindingSource = BDS;
 
             // Autosizing by DGV
             for (int i = 0; i <= DGVTable.Columns.Count - 1; i++)
@@ -92,19 +81,19 @@ namespace TransportationClient
             if (tableRadio.Checked)
             {
                 openTable(true);
-                CreateRep(DGVTable);
+                Lib.ClientUtils.CreateRep(DGVTable);
                 return;
             }
             if (queryRadio.Checked)
             {
                 SwitchQ(queryRpt.Text);
-                CreateRep(DGVQueries);
+                Lib.ClientUtils.CreateRep(DGVQueries);
                 return;
             }
             if (customRadio.Checked)
             {
                 CreateCustomQ(customRpt.Text);
-                CreateRep(DGVQueries);
+                Lib.ClientUtils.CreateRep(DGVQueries);
                 return;
             }
         }
@@ -131,7 +120,7 @@ namespace TransportationClient
                     openQuery(sql);
                     break;
                 case "Вычисление тарифа по дате":
-                    sql = Lib.ModalTariffQ();
+                    sql = Lib.ClientUtils.ModalTariffQ();
                     openQuery(sql);
                     break;
                 default:
@@ -164,11 +153,6 @@ namespace TransportationClient
         {
             Lib.CreateQuery(sql);
             DGVQueries.DataSource = Lib.dtQ;
-            BDS = new BindingSource
-            {
-                DataSource = DGVQueries.DataSource
-            };
-            Navigator.BindingSource = BDS;
 
             // Autosizing by DGV
             for (int i = 0; i <= DGVQueries.Columns.Count - 1; i++)
@@ -186,34 +170,7 @@ namespace TransportationClient
                 DGVQueries.Columns[i].Width = colw;
             }
         }
-        public static void CreateRep(DataGridView dgv)
-        {
-            if (dgv == null)
-            {
-                MessageBox.Show("Отсутствуют данные для печати!");
-                return;
-            }
-            int rowc = dgv.RowCount;
-            int colc = dgv.ColumnCount;
-            string[,] rep = new string[rowc, colc];
-            for (int i = 0; i < rowc - 1; i++)
-                for (int j = 0; j < colc; j++)
-                    rep[i, j] = dgv.Rows[i].Cells[j].Value.ToString();
-            Word.Application application = new Word.Application();
-            Object missing = Type.Missing;
-            application.Documents.Add(ref missing, ref missing, ref missing, ref missing);
-            Word.Document document = application.ActiveDocument;
-            Word.Range range = application.Selection.Range;
-            Object behiavor = Word.WdDefaultTableBehavior.wdWord9TableBehavior;
-            Object autoFitBehiavor = Word.WdAutoFitBehavior.wdAutoFitFixed;
-            document.Tables.Add(range, rowc, colc, ref behiavor, ref autoFitBehiavor);
-            for (int i = 0; i < Lib.names.Length; i++)
-                document.Tables[1].Cell(1, i + 1).Range.Text = Lib.names[i].ToString();
-            for (int i = 1; i < rowc; i++)
-                for (int j = 1; j < colc + 1; j++)
-                    document.Tables[1].Cell(i + 1, j).Range.Text = rep[i - 1, j - 1].ToString();
-            application.Visible = true;
-        }
+        
 
         private void createQBtn_Click(object sender, EventArgs e)
         {
@@ -227,17 +184,17 @@ namespace TransportationClient
 
         private void поТаблицеToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CreateRep(DGVTable);
+            Lib.ClientUtils.CreateRep(DGVTable);
         }
 
         private void поПользовательскомуЗапросуToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CreateRep(DGVQueries);
+            Lib.ClientUtils.CreateRep(DGVQueries);
         }
 
         private void поЗапросуToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            CreateRep(DGVQueries);
+            Lib.ClientUtils.CreateRep(DGVQueries);
         }
 
         private void создатьToolStripMenuItem_Click(object sender, EventArgs e)
@@ -282,9 +239,6 @@ namespace TransportationClient
 
         private void deleteBtn_Click(object sender, EventArgs e)
         {
-            int currow = DGVTable.CurrentRow.Index;
-            Lib.s = Lib.CurrentRecord(currow);
-            // удаляем выделенные строки из  DGVTables
             foreach (DataGridViewRow row in DGVTable.SelectedRows)
             {
                 int id = (int)row.Cells[0].Value;
