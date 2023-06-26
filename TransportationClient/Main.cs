@@ -7,12 +7,14 @@ namespace TransportationClient
     public partial class Main : Form
     {
         private bool cn = false;
+
         public Main()
         {
             InitializeComponent();
             openCN();
             FillingTables();
         }
+
         private void openCN()
         {
             Lib.OpenConnect();
@@ -21,6 +23,7 @@ namespace TransportationClient
             cn = true;
             RefreshBtns();
         }
+
         private void closeCN()
         {
             Lib.CloseConnect();
@@ -29,6 +32,7 @@ namespace TransportationClient
             cn = false;
             RefreshBtns();
         }
+
         private void FillingTables()
         {
             foreach (var table in Lib.tables)
@@ -37,6 +41,7 @@ namespace TransportationClient
                 tableRpt.Items.Add(table);
             }
         }
+
         private void openBtn_Click(object sender, EventArgs e)
         {
             if (!string.IsNullOrEmpty(Table.Text))
@@ -48,6 +53,7 @@ namespace TransportationClient
                 MessageBox.Show("Ошибка. Не задана таблица.");
             }
         }
+
         private void openTable(bool rpt)
         {
             if (rpt)
@@ -76,6 +82,7 @@ namespace TransportationClient
                 DGVTable.Columns[i].Width = colw;
             }
         }
+
         private void createRptBtn_Click(object sender, EventArgs e)
         {
             if (tableRadio.Checked)
@@ -97,6 +104,7 @@ namespace TransportationClient
                 return;
             }
         }
+
         private void SwitchQ(string textboxText)
         {
             string sql;
@@ -127,6 +135,7 @@ namespace TransportationClient
                     break;
             }
         }
+
         private void CreateCustomQ(string sqlText)
         {
             try
@@ -138,6 +147,7 @@ namespace TransportationClient
                 MessageBox.Show("Произошла ошибка, проверьте ваш запрос.");
             }
         }
+
         private void RefreshBtns()
         {
             createBtn.Enabled = cn;
@@ -149,6 +159,7 @@ namespace TransportationClient
             createQBtn.Enabled = cn;
             createRptBtn.Enabled = cn;
         }
+
         private void openQuery(string sql)
         {
             Lib.CreateQuery(sql);
@@ -170,7 +181,6 @@ namespace TransportationClient
                 DGVQueries.Columns[i].Width = colw;
             }
         }
-        
 
         private void createQBtn_Click(object sender, EventArgs e)
         {
@@ -216,12 +226,13 @@ namespace TransportationClient
 
             for (int i = 0; i < Lib.names.Length; i++)
             {
-                Label namelabel = new Label();
-                namelabel.Location = new Point(Lib.splitter * 6, split);
-                namelabel.Text = Lib.names[i];
+                Label namelabel = new Label
+                {
+                    Location = new Point(Lib.splitter * 6, split),
+                    Text = Lib.names[i]
+                };
                 fAdd.Controls.Add(namelabel);
-                txt[i] = new TextBox();
-                txt[i].Location = new Point(Lib.splitter, split);
+                txt[i] = new TextBox { Location = new Point(Lib.splitter, split) };
                 fAdd.Controls.Add(txt[i]);
                 split += Lib.splitter * 2;
             }

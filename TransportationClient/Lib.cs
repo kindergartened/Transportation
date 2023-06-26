@@ -22,13 +22,18 @@ namespace TransportationClient
         public static List<string> tables;
         public static string[] names;
         public const int splitter = 30;
-        const string DBPath = "D:/tstu/works/labs/malkov/Course/db.accdb;";
-        public static string connectString = $"Provider=Microsoft.ACE.OLEDB.16.0;Data Source={DBPath}";
+        const string DBPath = "D:\\Studies\\!TSTU\\malkov\\access\\db.accdb;";
+        public static string connectString =
+            $"Provider=Microsoft.ACE.OLEDB.16.0;Data Source={DBPath}";
 
-        public static string exactMatchQ = "SELECT Должность, Клиент FROM Клиент WHERE Должность = 'Безработный'";
-        public static string notExactMatchQ = "SELECT Индекс, Клиент FROM Клиент WHERE Индекс > '170001'";
-        public static string groupQ = "SELECT Клиент.Город, Sum(Звонок.Длительность) AS Общая_Длительность FROM Звонок INNER JOIN Клиент ON Звонок.Код_Звонок = Клиент.Код_Звонок GROUP BY Клиент.Город HAVING Клиент.Город = 'Тверь'";
-        public static string calcFieldQ = "SELECT Клиент, Страна + ', ' + Индекс + ', ' + Город + ', ' + Адрес AS Полный_адрес FROM Клиент";
+        public static string exactMatchQ =
+            "SELECT Должность, Клиент FROM Клиент WHERE Должность = 'Безработный'";
+        public static string notExactMatchQ =
+            "SELECT Индекс, Клиент FROM Клиент WHERE Индекс > '170001'";
+        public static string groupQ =
+            "SELECT Клиент.Город, Sum(Звонок.Длительность) AS Общая_Длительность FROM Звонок INNER JOIN Клиент ON Звонок.Код_Звонок = Клиент.Код_Звонок GROUP BY Клиент.Город HAVING Клиент.Город = 'Тверь'";
+        public static string calcFieldQ =
+            "SELECT Клиент, Страна + ', ' + Индекс + ', ' + Город + ', ' + Адрес AS Полный_адрес FROM Клиент";
 
         /// <summary>
         /// Открытие таблицы
@@ -42,6 +47,7 @@ namespace TransportationClient
             dt = ds.Tables[0];
             names = DBUtils.Caption(dt);
         }
+
         /// <summary>
         /// Открытие соединения
         /// </summary>
@@ -51,6 +57,7 @@ namespace TransportationClient
             MyConnect.Open();
             DBUtils.GetTableNames();
         }
+
         /// <summary>
         /// Закрытие соединения
         /// </summary>
@@ -58,6 +65,7 @@ namespace TransportationClient
         {
             MyConnect.Dispose();
         }
+
         /// <summary>
         /// Создание запроса
         /// </summary>
@@ -70,6 +78,7 @@ namespace TransportationClient
             dtQ = dsQ.Tables[0];
             names = DBUtils.Caption(dtQ);
         }
+
         /// <summary>
         /// Удаление строки таблицы по первичному ключу
         /// </summary>
@@ -77,14 +86,11 @@ namespace TransportationClient
         /// <param name="id">Первичный ключ</param>
         public static void DeleteById(string tableName, int id)
         {
-            string sql = $"DELETE FROM {tableName} WHERE Код_{tableName} = {id}";
-            OleDbCommand operation = new OleDbCommand
-            {
-                CommandText = sql,
-                Connection = MyConnect
-            };
+            string sql = $"DELETE FROM {tableName} WHERE {names[0]} = {id}";
+            OleDbCommand operation = new OleDbCommand { CommandText = sql, Connection = MyConnect };
             operation.ExecuteNonQuery();
         }
+
         /// <summary>
         /// Добавление строки таблицы
         /// </summary>
@@ -92,14 +98,12 @@ namespace TransportationClient
         /// <param name="values">значения</param>
         public static void Insert(string tableName, string[] values)
         {
-            string sql = $"INSERT INTO {tableName} ({string.Join(", ", names)}) VALUES ({DBUtils.FormatValues(values)})";
-            OleDbCommand operation = new OleDbCommand
-            {
-                CommandText = sql,
-                Connection = MyConnect
-            };
+            string sql =
+                $"INSERT INTO {tableName} ({string.Join(", ", names)}) VALUES ({DBUtils.FormatValues(values)})";
+            OleDbCommand operation = new OleDbCommand { CommandText = sql, Connection = MyConnect };
             operation.ExecuteNonQuery();
         }
+
         /// <summary>
         /// Обновление строки таблицы по первичному ключу
         /// </summary>
@@ -108,14 +112,12 @@ namespace TransportationClient
         /// <param name="id">первичный ключ</param>
         public static void Update(string tableName, dynamic[] values, int id)
         {
-            string sql = $"UPDATE {tableName} SET {DBUtils.FormatNamesValues(values)} WHERE {names[0]} = {id}";
-            OleDbCommand operation = new OleDbCommand
-            {
-                CommandText = sql,
-                Connection = MyConnect
-            };
+            string sql =
+                $"UPDATE {tableName} SET {DBUtils.FormatNamesValues(values)} WHERE {names[0]} = {id}";
+            OleDbCommand operation = new OleDbCommand { CommandText = sql, Connection = MyConnect };
             operation.ExecuteNonQuery();
         }
+
         /// <summary>
         /// Дополнительные методы для работы с базами данных.
         /// </summary>
@@ -135,6 +137,7 @@ namespace TransportationClient
                     tables.Add(schemas.Rows[i][2].ToString());
                 }
             }
+
             /// <summary>
             /// Получение заголовков столбцов таблицы
             /// </summary>
@@ -149,6 +152,7 @@ namespace TransportationClient
                 }
                 return StrName;
             }
+
             /// <summary>
             /// Форматирование значений для Insert запроса. Пример: value -> 'value'
             /// </summary>
@@ -162,6 +166,7 @@ namespace TransportationClient
                 }
                 return string.Join(", ", values);
             }
+
             /// <summary>
             /// Форматирование значений для update запроса. Пример: column, value -> column = 'value'
             /// </summary>
@@ -177,6 +182,7 @@ namespace TransportationClient
                 return string.Join(", ", result);
             }
         }
+
         /// <summary>
         /// Дополнительные методы для работы с клиентом приложения
         /// </summary>
@@ -188,7 +194,11 @@ namespace TransportationClient
             /// <returns>sql string</returns>
             public static string ModalTariffQ()
             {
-                string date = Interaction.InputBox("Введите дату для определения тарифа по должностям, дата вводится в формате M/D/YYYY.", "Дата", "12/9/2022");
+                string date = Interaction.InputBox(
+                    "Введите дату для определения тарифа по должностям, дата вводится в формате M/D/YYYY.",
+                    "Дата",
+                    "12/9/2022"
+                );
                 int coef = int.Parse(date.Split('/')[1]) / 2 == 0 ? 2 : 3;
                 return $"SELECT Клиент.Должность, Sum(Звонок.Длительность)*{coef} AS Тариф FROM Звонок INNER JOIN Клиент ON Звонок.Код_Звонок = Клиент.Код_Звонок GROUP BY Клиент.Должность, Звонок.Дата_Звонка HAVING Звонок.Дата_Звонка = #{date}#";
             }
@@ -207,15 +217,15 @@ namespace TransportationClient
                     for (int j = 0; j < colc; j++)
                         rep[i, j] = dgv.Rows[i].Cells[j].Value.ToString();
                 Word.Application application = new Word.Application();
-                Object missing = Type.Missing;
+                object missing = Type.Missing;
                 application.Documents.Add(ref missing, ref missing, ref missing, ref missing);
                 Word.Document document = application.ActiveDocument;
                 Word.Range range = application.Selection.Range;
-                Object behiavor = Word.WdDefaultTableBehavior.wdWord9TableBehavior;
-                Object autoFitBehiavor = Word.WdAutoFitBehavior.wdAutoFitFixed;
+                object behiavor = Word.WdDefaultTableBehavior.wdWord9TableBehavior;
+                object autoFitBehiavor = Word.WdAutoFitBehavior.wdAutoFitFixed;
                 document.Tables.Add(range, rowc, colc, ref behiavor, ref autoFitBehiavor);
-                for (int i = 0; i < Lib.names.Length; i++)
-                    document.Tables[1].Cell(1, i + 1).Range.Text = Lib.names[i].ToString();
+                for (int i = 0; i < names.Length; i++)
+                    document.Tables[1].Cell(1, i + 1).Range.Text = names[i].ToString();
                 for (int i = 1; i < rowc; i++)
                     for (int j = 1; j < colc + 1; j++)
                         document.Tables[1].Cell(i + 1, j).Range.Text = rep[i - 1, j - 1].ToString();
